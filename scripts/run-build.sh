@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+echo "Received parameters: $@"
+
 IOS_MODE="DebugDevelopment"
 ANDROID_MODE="developmentDebug"
 SCHEME="New Expensify Dev"
@@ -17,7 +19,7 @@ function print_error_and_exit {
 }
 
 # Assign the arguments to variables if arguments are correct
-if [ "$#" -ne 1 ] || [[ "$1" != "--ios" && "$1" != "--ipad" && "$1" != "--ipad-sm" && "$1" != "--android" ]]; then
+if [ "$#" -ne 1 ] || [[ "$1" != "--ios" && "$1" != "--ipad" && "$1" != "--ipad-sm" && "$1" != "--android" && "$1" != "--android-apk" && "$1" != "--ios-ipa"  && "$1" != "--export-sh" ]]; then
     print_error_and_exit
 fi
 
@@ -60,7 +62,25 @@ case "$BUILD" in
         npx rnef run:ios --simulator "iPad Pro (11-inch) (4th generation)" --configuration $IOS_MODE --scheme "$SCHEME"
         ;;
     --android)
-        npx rnef run:android --variant $ANDROID_MODE --app-id $APP_ID --active-arch-only
+        npx rnef run:android --variant $ANDROID_MODE --app-id $APP_ID --active-arch-only --verbose
+        ;;
+    --android-tt)
+        npx rnef run:android --variant $ANDROID_MODE --app-id $APP_ID --active-arch-only --binary-path "./Mobile-Expensify/Android/build/outputs/apk/debug/Expensify-debug.apk"
+        ;;
+    --android-apk)
+        npx rnef build:android --variant $ANDROID_MODE --active-arch-only
+        ;;
+    --ios-ipa)
+        npx rnef build:ios --configuration $IOS_MODE --scheme "$SCHEME" --destination "simulator"	 --verbose
+        ;;
+    --export-sh)
+        export SCHEME="$SCHEME"
+        export IOS_MODE="$IOS_MODE"
+        export ANDROID_MODE="$$ANDROID_MODE"
+        echo -e "${GREEN}Environment variables exported:${NC}"
+        echo "SCHEME=$SCHEME"
+        echo "IOS_MODE=$IOS_MODE"
+        echo "ANDROID_MODE=$ANDROID_MODE"
         ;;
     *)
         print_error_and_exit
