@@ -7,7 +7,7 @@ DIFF_FILENAME="Main.diff"
 TEMP_DIFF_FILE="main.diff"
 
 # Generate the diff file
-git diff test-runner..main > "$TEMP_DIFF_FILE"
+git diff main..test-runner > "$TEMP_DIFF_FILE"
 
 # Check if the diff file is empty
 if [ ! -s "$TEMP_DIFF_FILE" ]; then
