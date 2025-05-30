@@ -594,4 +594,4 @@ jobs:
           webhook: ${{ secrets.SLACK_WEBHOOK_BUILDS }}
           webhook-type: incoming-webhook
           payload: |
-            text: "Build job completed for PR: ${{ github.event.inputs.APP_PULL_REQUEST_NUMBER || github.event.inputs.HYBRIDAPP_PULL_REQUEST_NUMBER }}\nAndroid: ${{ needs.androidHybrid.outputs.ANDROID_ARTIFACT_PATH }}\niOS: ${{ needs.iosHybrid.outputs.IOS_ARTIFACT_PATH }}"
+            text: "Build job completed for PR: ${{ env.PULL_REQUEST }}\nAndroid: ${{ needs.androidHybrid.outputs.ANDROID_ARTIFACT_PATH }}\niOS: ${{ needs.iosHybrid.outputs.IOS_ARTIFACT_PATH }}"
