@@ -155,12 +155,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Post on Slack
-        uses: slackapi/slack-github-action@v1.27.1
+        uses: slackapi/slack-github-action@v2.1.0
         with:
-          slack-message: >
-            Build job started for PR: ${{ github.event.inputs.APP_PULL_REQUEST_NUMBER || github.event.inputs.HYBRIDAPP_PULL_REQUEST_NUMBER }}
-            Platforms: ${{ github.event.inputs.IOS && 'iOS' || '' }} ${{ github.event.inputs.ANDROID && 'Android' || '' }}
-          slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_BUILDS }}
+          webhook: ${{ secrets.SLACK_WEBHOOK_BUILDS }}
+          webhook-type: incoming-webhook
+          payload: |
+            text: "Build job started for PR: ${{ github.event.inputs.APP_PULL_REQUEST_NUMBER || github.event.inputs.HYBRIDAPP_PULL_REQUEST_NUMBER }}
+            Platforms: ${{ ((github.event.inputs.IOS || github.event.inputs.APP_PULL_REQUEST_NUMBER) && 'iOS') || '' }} ${{ ((github.event.inputs.ANDROID || github.event.inputs.APP_PULL_REQUEST_NUMBER) && 'Android') || '' }}"
 
   androidHybrid:
     name: Build Android HybridApp (Debug)
@@ -587,10 +588,9 @@ jobs:
           retention-days: 7
 
       - name: Post on Slack
-        uses: slackapi/slack-github-action@v1.27.0
+        uses: slackapi/slack-github-action@v2.1.0
         with:
-          slack-message: >
-            Build job completed for PR: ${{ github.event.inputs.APP_PULL_REQUEST_NUMBER || github.event.inputs.HYBRIDAPP_PULL_REQUEST_NUMBER }}
-            Android: ${{ needs.androidHybrid.outputs.ANDROID_ARTIFACT_PATH }}
-            iOS: ${{ needs.iosHybrid.outputs.IOS_ARTIFACT_PATH }}
-          slack-webhook-url: ${{ secrets.SLACK_WEBHOOK_BUILDS }}
+          webhook: ${{ secrets.SLACK_WEBHOOK_BUILDS }}
+          webhook-type: incoming-webhook
+          payload: |
+            text: "Build job completed for PR: ${{ github.event.inputs.APP_PULL_REQUEST_NUMBER || github.event.inputs.HYBRIDAPP_PULL_REQUEST_NUMBER }}\nAndroid: ${{ needs.androidHybrid.outputs.ANDROID_ARTIFACT_PATH }}\niOS: ${{ needs.iosHybrid.outputs.IOS_ARTIFACT_PATH }}"
