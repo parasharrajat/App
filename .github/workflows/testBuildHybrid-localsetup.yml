@@ -161,7 +161,7 @@ jobs:
           webhook: ${{ secrets.SLACK_WEBHOOK_BUILDS }}
           webhook-type: incoming-webhook
           payload: |
-            text: "Build job started for PR: ${{ env.PULL_REQUEST }}
+            text: "Build job started for PR: https://github.com/Expensify/App/pull/${{ env.PULL_REQUEST }}
             Platforms: ${{ ((github.event.inputs.IOS || env.PULL_REQUEST!= '') && 'iOS') || '' }} ${{ ((github.event.inputs.ANDROID || env.PULL_REQUEST!= '') && 'Android') || '' }}"
 
   androidHybrid:
@@ -172,13 +172,14 @@ jobs:
     outputs:
       ANDROID_ARTIFACT_PATH: ${{ steps.export-android-path.outputs.ANDROID_ARTIFACT_PATH }}
     steps:
-      # - name: Checkout
-      #   # v4
-      #   uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608
-      #   with:
-      #     submodules: true
-      #     ref: ${{ needs.getNewDotRef.outputs.REF || 'main' }}
-      #     token: ${{ secrets.OS_BOTIFY_TOKEN }}
+      - name: Checkout
+        # v4
+        uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608
+        with:
+          submodules: true
+          ref: ${{ needs.getNewDotRef.outputs.REF || 'main' }}
+          token: ${{ secrets.OS_BOTIFY_TOKEN }}
+
       - name: Checkout to PR
         env:
           GH_TOKEN: ${{ secrets.OS_BOTIFY_TOKEN }}
@@ -200,19 +201,14 @@ jobs:
           DIFF_FILENAME: "Main.diff"
           TEMP_DIFF_FILE: "patch.diff"
           GH_TOKEN: ${{ secrets.OS_BOTIFY_TOKEN }}
-
         run: |
-          echo "Using gh cli to download '$DIFF_FILENAME' from Gist ID: $GIST_ID"
+          echo "Using gh cli to download '$DIFF_FILENAME' from Gist ID: $GIST_DIFF_URL"
 
-          # 1. Download the raw content of the specific file from the Gist using gh cli
-          # --filename: Specifies the file within the Gist
-          # --raw: Outputs the raw content of the file
-
-          gh gist view --filename "$DIFF_FILENAME" --raw "$GIST_ID" > "$TEMP_DIFF_FILE"
+          gh gist view --filename "$DIFF_FILENAME" --raw "$GIST_DIFF_URL" > "$TEMP_DIFF_FILE"
 
           # Check if the gh command was successful and the file is not empty
           if [ $? -ne 0 ] || [ ! -s "$TEMP_DIFF_FILE" ]; then
-            echo "::error::Failed to download diff file from Gist via gh cli. Check GIST_ID, DIFF_FILENAME, and Gist permissions."
+            echo "::error::Failed to download diff file from Gist via gh cli. Check GIST_DIFF_URL, DIFF_FILENAME, and Gist permissions."
             exit 1
           fi
 
@@ -374,13 +370,14 @@ jobs:
     outputs:
       IOS_ARTIFACT_PATH: ${{ steps.export-ios-path.outputs.IOS_ARTIFACT_PATH }} # This will point to the artifact name
     steps:
-      # - name: Checkout
-      #   # v4
-      #   uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608
-      #   with:
-      #     submodules: true
-      #     ref: ${{ needs.getNewDotRef.outputs.REF || 'main' }}
-      #     token: ${{ secrets.OS_BOTIFY_TOKEN }}
+      - name: Checkout
+        # v4
+        uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608
+        with:
+          submodules: true
+          ref: ${{ needs.getNewDotRef.outputs.REF || 'main' }}
+          token: ${{ secrets.OS_BOTIFY_TOKEN }}
+
       - name: Checkout to PR
         env:
           GH_TOKEN: ${{ secrets.OS_BOTIFY_TOKEN }}
@@ -402,19 +399,18 @@ jobs:
           DIFF_FILENAME: "Main.diff"
           TEMP_DIFF_FILE: "patch.diff"
           GH_TOKEN: ${{ secrets.OS_BOTIFY_TOKEN }}
-
         run: |
-          echo "Using gh cli to download '$DIFF_FILENAME' from Gist ID: $GIST_ID"
+          echo "Using gh cli to download '$DIFF_FILENAME' from Gist ID: $GIST_DIFF_URL"
 
           # 1. Download the raw content of the specific file from the Gist using gh cli
           # --filename: Specifies the file within the Gist
           # --raw: Outputs the raw content of the file
 
-          gh gist view --filename "$DIFF_FILENAME" --raw "$GIST_ID" > "$TEMP_DIFF_FILE"
+          gh gist view --filename "$DIFF_FILENAME" --raw "$GIST_DIFF_URL" > "$TEMP_DIFF_FILE"
 
           # Check if the gh command was successful and the file is not empty
           if [ $? -ne 0 ] || [ ! -s "$TEMP_DIFF_FILE" ]; then
-            echo "::error::Failed to download diff file from Gist via gh cli. Check GIST_ID, DIFF_FILENAME, and Gist permissions."
+            echo "::error::Failed to download diff file from Gist via gh cli. Check GIST_DIFF_URL, DIFF_FILENAME, and Gist permissions."
             exit 1
           fi
 
@@ -594,4 +590,4 @@ jobs:
           webhook: ${{ secrets.SLACK_WEBHOOK_BUILDS }}
           webhook-type: incoming-webhook
           payload: |
-            text: "Build job completed for PR: ${{ env.PULL_REQUEST }}\nAndroid: ${{ needs.androidHybrid.outputs.ANDROID_ARTIFACT_PATH }}\niOS: ${{ needs.iosHybrid.outputs.IOS_ARTIFACT_PATH }}"
+            text: "Build job completed for PR: https://github.com/Expensify/App/pull/${{ env.PULL_REQUEST }} \nAndroid: ${{ needs.androidHybrid.outputs.ANDROID_ARTIFACT_PATH }}\niOS: ${{ needs.iosHybrid.outputs.IOS_ARTIFACT_PATH }}"
