@@ -1,7 +1,3 @@
-diff --git a/node_modules/@octokit/plugin-paginate-rest/.DS_Store b/node_modules/@octokit/plugin-paginate-rest/.DS_Store
-new file mode 100644
-index 0000000..2f0b0b5
-Binary files /dev/null and b/node_modules/@octokit/plugin-paginate-rest/.DS_Store differ
 diff --git a/node_modules/@octokit/plugin-paginate-rest/dist-node/index.js b/node_modules/@octokit/plugin-paginate-rest/dist-node/index.js
 index 043ecb3..8af9a5d 100644
 --- a/node_modules/@octokit/plugin-paginate-rest/dist-node/index.js
