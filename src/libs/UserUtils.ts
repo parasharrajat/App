@@ -154,7 +154,7 @@ function getDefaultAvatar(accountID = -1, avatarURL?: string, accountEmail = '')
 /**
  * Helper method to return default avatar URL associated with the accountID
  */
-function getDefaultAvatarURL(accountID: string | number = '', avatarURL?: string, accountEmail = ''): string {
+function getDefaultAvatarURL({accountID = '', avatarURL, accountEmail = ''}: {accountID: string | number; avatarURL?: string; accountEmail?: string}): string {
     if (Number(accountID) === CONST.ACCOUNT_ID.CONCIERGE) {
         return CONST.CONCIERGE_ICON_URL;
     }
@@ -203,7 +203,7 @@ function getAvatar(avatarSource?: AvatarSource, accountID?: number): AvatarSourc
  * @param accountID - the accountID of the user
  */
 function getAvatarUrl(avatarSource: AvatarSource | undefined, accountID: number): AvatarSource {
-    return isDefaultAvatar(avatarSource) ? getDefaultAvatarURL(accountID, avatarSource) : avatarSource;
+    return isDefaultAvatar(avatarSource) ? getDefaultAvatarURL({accountID, avatarURL: avatarSource}) : avatarSource;
 }
 
 /**
