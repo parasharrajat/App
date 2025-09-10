@@ -7,7 +7,7 @@ import ONYXKEYS from '@src/ONYXKEYS';
 import type {PersonalDetails, Transaction} from '@src/types/onyx';
 import {generateTransactionID, getDraftTransactions} from './Transaction';
 
-let connection: Connection;
+// let connection: Connection;
 
 /**
  * Makes a backup copy of a transaction object that can be restored when the user cancels editing a transaction.
@@ -20,24 +20,26 @@ function createBackupTransaction(transaction: OnyxEntry<Transaction>, isDraft: b
     // In Strict Mode, the backup logic useEffect is triggered twice on mount. The restore logic is delayed because we need to connect to the onyx first,
     // so it's possible that the restore logic is executed after creating the backup for the 2nd time which will completely clear the backup.
     // To avoid that, we need to cancel the pending connection.
-    Onyx.disconnect(connection);
+    // Onyx.disconnect(connection);
     const newTransaction = {
         ...transaction,
     };
-    const conn = Onyx.connect({
-        key: `${ONYXKEYS.COLLECTION.TRANSACTION_BACKUP}${transaction.transactionID}`,
-        callback: (transactionBackup) => {
-            Onyx.disconnect(conn);
-            if (transactionBackup) {
-                // If the transactionBackup exists it means we haven't properly restored original value on unmount
-                // such as on page refresh, so we will just restore the transaction from the transactionBackup here.
-                Onyx.set(`${isDraft ? ONYXKEYS.COLLECTION.TRANSACTION_DRAFT : ONYXKEYS.COLLECTION.TRANSACTION}${transaction.transactionID}`, transactionBackup);
-                return;
-            }
-            // Use set so that it will always fully overwrite any backup transaction that could have existed before
-            Onyx.set(`${ONYXKEYS.COLLECTION.TRANSACTION_BACKUP}${transaction.transactionID}`, newTransaction);
-        },
-    });
+
+    // Use set so that it will always fully overwrite any backup transaction that could have existed before
+    Onyx.set(`${ONYXKEYS.COLLECTION.TRANSACTION_BACKUP}${transaction.transactionID}`, newTransaction);
+
+    // const conn = Onyx.connect({
+    //     key: `${ONYXKEYS.COLLECTION.TRANSACTION_BACKUP}${transaction.transactionID}`,
+    //     callback: (transactionBackup) => {
+    //         Onyx.disconnect(conn);
+    //         if (transactionBackup) {
+    //             // If the transactionBackup exists it means we haven't properly restored original value on unmount
+    //             // such as on page refresh, so we will just restore the transaction from the transactionBackup here.
+    //             Onyx.set(`${isDraft ? ONYXKEYS.COLLECTION.TRANSACTION_DRAFT : ONYXKEYS.COLLECTION.TRANSACTION}${transaction.transactionID}`, transactionBackup);
+    //             return;
+    //         }
+    //     },
+    // });
 }
 
 /**
@@ -51,21 +53,14 @@ function removeBackupTransaction(transactionID: string | undefined) {
     Onyx.set(`${ONYXKEYS.COLLECTION.TRANSACTION_BACKUP}${transactionID}`, null);
 }
 
-function restoreOriginalTransactionFromBackup(transactionID: string | undefined, isDraft: boolean) {
+function restoreOriginalTransactionFromBackup(transactionID: string | undefined, backupTransaction: OnyxEntry<Transaction>, isDraft: boolean) {
     if (!transactionID) {
         return;
     }
 
-    connection = Onyx.connect({
-        key: `${ONYXKEYS.COLLECTION.TRANSACTION_BACKUP}${transactionID}`,
-        callback: (backupTransaction) => {
-            Onyx.disconnect(connection);
-
-            // Use set to completely overwrite the original transaction
-            Onyx.set(`${isDraft ? ONYXKEYS.COLLECTION.TRANSACTION_DRAFT : ONYXKEYS.COLLECTION.TRANSACTION}${transactionID}`, backupTransaction ?? null);
-            removeBackupTransaction(transactionID);
-        },
-    });
+    // Use set to completely overwrite the original transaction
+    Onyx.set(`${isDraft ? ONYXKEYS.COLLECTION.TRANSACTION_DRAFT : ONYXKEYS.COLLECTION.TRANSACTION}${transactionID}`, backupTransaction ?? null);
+    removeBackupTransaction(transactionID);
 }
 
 function createDraftTransaction(transaction: OnyxEntry<Transaction>) {

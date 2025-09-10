@@ -1,6 +1,6 @@
 import {deepEqual} from 'fast-equals';
 import isEmpty from 'lodash/isEmpty';
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import React, {use, useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {View} from 'react-native';
 // eslint-disable-next-line no-restricted-imports
 import type {ScrollView as RNScrollView} from 'react-native';
@@ -83,7 +83,7 @@ function IOURequestStepDistance({
     const {isBetaEnabled} = usePermissions();
     const [allReports] = useOnyx(ONYXKEYS.COLLECTION.REPORT, {canBeMissing: false});
     const [reportNameValuePairs] = useOnyx(`${ONYXKEYS.COLLECTION.REPORT_NAME_VALUE_PAIRS}${report?.reportID}`, {canBeMissing: true});
-    const [transactionBackup] = useOnyx(`${ONYXKEYS.COLLECTION.TRANSACTION_BACKUP}${transactionID}`, {canBeMissing: true});
+    const [transactionBackup, transactionBackupMetadata] = useOnyx(`${ONYXKEYS.COLLECTION.TRANSACTION_BACKUP}${transactionID}`, {canBeMissing: true});
     const policy = usePolicy(report?.policyID);
     const [personalDetails] = useOnyx(ONYXKEYS.PERSONAL_DETAILS_LIST, {canBeMissing: false});
     const [activePolicyID] = useOnyx(ONYXKEYS.NVP_ACTIVE_POLICY_ID, {canBeMissing: false});
@@ -91,6 +91,17 @@ function IOURequestStepDistance({
     const [skipConfirmation] = useOnyx(`${ONYXKEYS.COLLECTION.SKIP_CONFIRMATION}${transactionID}`, {canBeMissing: false});
     const [lastSelectedDistanceRates] = useOnyx(ONYXKEYS.NVP_LAST_SELECTED_DISTANCE_RATES, {canBeMissing: true});
     const [optimisticWaypoints, setOptimisticWaypoints] = useState<WaypointCollection | null>(null);
+
+    const transactionBackupRef = useRef(transactionBackup);
+
+    useEffect(() => {
+        console.debug(
+            `[IOURequestStepDistance] transactionBackup changed for transactionID: ${transactionID}, reportID: ${reportID}, transactionBackupMetadata.status : ${transactionBackupMetadata.status}`,
+            transactionBackup,
+        );
+        transactionBackupRef.current = transactionBackup;
+    }, [transactionBackup]);
+
     const waypoints = useMemo(
         () =>
             optimisticWaypoints ??
@@ -232,26 +243,44 @@ function IOURequestStepDistance({
         setShouldShowAtLeastTwoDifferentWaypointsError(false);
     }, [atLeastTwoDifferentWaypointsError, duplicateWaypointsError, hasRouteError, isLoading, isLoadingRoute, nonEmptyWaypointsCount, transaction]);
 
+    // console.debug(`[IOURequestStepDistance] Rendered for transactionID: ${transactionID}, reportID: ${reportID}, transactionBackupMetadata.status : ${transactionBackupMetadata.status}`);
+
     // This effect runs when the component is mounted and unmounted. It's purpose is to be able to properly
     // discard changes if the user cancels out of making any changes. This is accomplished by backing up the
     // original transaction, letting the user modify the current transaction, and then if the user ever
     // cancels out of the modal without saving changes, the original transaction is restored from the backup.
     useEffect(() => {
-        if (isCreatingNewRequest) {
+        if (isCreatingNewRequest || transactionBackupMetadata.status !== 'loaded') {
             return () => {};
         }
         const isDraft = shouldUseTransactionDraft(action);
-        // On mount, create the backup transaction.
-        createBackupTransaction(transaction, isDraft);
+
+        console.debug(
+            `[IOURequestStepDistance] Setting up backup for transactionID: ${transactionID}, reportID: ${reportID}, isDraft: ${isDraft}, action: ${action}, transactionBackupMetadata.status : ${transactionBackupMetadata.status} transactionbakcup:`,
+            transactionBackupRef.current,
+            transactionBackup,
+        );
+        if (transactionBackupRef.current) {
+            restoreOriginalTransactionFromBackup(transaction?.transactionID, transactionBackupRef.current, isDraft);
+        } else {
+            // On mount, create the backup transaction.
+            createBackupTransaction(transaction, isDraft);
+        }
 
         return () => {
+            console.debug(
+                `[IOURequestStepDistance] Restoring original transaction from backup on unmount for transactionID: ${transactionID}, reportID: ${reportID}, isDraft: ${isDraft}, action: ${action}, transactionBackupMetadata.status : ${transactionBackupMetadata.status} transactionbakcup:`,
+                transactionBackupRef.current,
+                transactionWasSaved.current,
+            );
             // If the user cancels out of the modal without saving changes, then the original transaction
             // needs to be restored from the backup so that all changes are removed.
             if (transactionWasSaved.current) {
                 removeBackupTransaction(transaction?.transactionID);
                 return;
             }
-            restoreOriginalTransactionFromBackup(transaction?.transactionID, isDraft);
+
+            restoreOriginalTransactionFromBackup(transaction?.transactionID, transactionBackupRef.current, isDraft);
 
             // If the user opens IOURequestStepDistance in offline mode and then goes online, re-open the report to fill in missing fields from the transaction backup
             if (!transaction?.reportID || hasRoute(transaction, true)) {
@@ -260,7 +289,7 @@ function IOURequestStepDistance({
             openReport(transaction?.reportID);
         };
         // eslint-disable-next-line react-compiler/react-compiler, react-hooks/exhaustive-deps
-    }, []);
+    }, [transactionBackupMetadata.status]);
 
     const navigateBack = useCallback(() => {
         Navigation.goBack(backTo);
