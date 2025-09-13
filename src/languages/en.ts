@@ -6623,15 +6623,15 @@ const translations = {
             const preMessage = 'Prohibited expense:';
             switch (prohibitedExpenseType) {
                 case 'alcohol':
-                    return `${preMessage} alcohol`;
+                    return `${preMessage} Alcohol`;
                 case 'gambling':
-                    return `${preMessage} gambling`;
+                    return `${preMessage} Gambling`;
                 case 'tobacco':
-                    return `${preMessage} tobacco`;
+                    return `${preMessage} Tobacco`;
                 case 'adultEntertainment':
-                    return `${preMessage} adult entertainment`;
+                    return `${preMessage} Adult entertainment`;
                 case 'hotelIncidentals':
-                    return `${preMessage} hotel incidentals`;
+                    return `${preMessage} Hotel incidentals`;
                 default:
                     return `${preMessage}${prohibitedExpenseType}`;
             }
