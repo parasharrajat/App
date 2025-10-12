@@ -152,29 +152,20 @@ function SidebarOrderedReportsContextProvider({
         const shouldDoIncrementalUpdate = updatedReports.length > 0 && Object.keys(currentReportsToDisplay).length > 0;
         let reportsToDisplay = {};
         if (shouldDoIncrementalUpdate) {
-            reportsToDisplay = SidebarUtils.updateReportsToDisplayInLHN(
-                currentReportsToDisplay,
-                chatReports,
-                updatedReports,
-                derivedCurrentReportID,
-                priorityMode === CONST.PRIORITY_MODE.GSD,
+            reportsToDisplay = SidebarUtils.updateReportsToDisplayInLHN({
+                displayedReports: currentReportsToDisplay,
+                reports: chatReports,
+                updatedReportsKeys: updatedReports,
+                currentReportId: derivedCurrentReportID,
+                isInFocusMode: priorityMode === CONST.PRIORITY_MODE.GSD,
                 betas,
-                policies,
                 transactionViolations,
                 reportNameValuePairs,
                 reportAttributes,
-            );
+                policies,
+            });
         } else {
-            reportsToDisplay = SidebarUtils.getReportsToDisplayInLHN(
-                derivedCurrentReportID,
-                chatReports,
-                betas,
-                policies,
-                priorityMode,
-                transactionViolations,
-                reportNameValuePairs,
-                reportAttributes,
-            );
+            reportsToDisplay = SidebarUtils.getReportsToDisplayInLHN(derivedCurrentReportID, chatReports, betas, priorityMode, transactionViolations, reportNameValuePairs, reportAttributes);
         }
 
         return reportsToDisplay;

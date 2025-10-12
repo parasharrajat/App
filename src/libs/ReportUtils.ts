@@ -3848,6 +3848,7 @@ type ReasonAndReportActionThatRequiresAttention = {
 
 function getReasonAndReportActionThatRequiresAttention(
     optionOrReport: OnyxEntry<Report> | OptionData,
+    optionOrReportRNVP: OnyxEntry<ReportNameValuePairs>,
     parentReportAction?: OnyxEntry<ReportAction>,
     isReportArchived = false,
 ): ReasonAndReportActionThatRequiresAttention | null {
@@ -3881,7 +3882,7 @@ function getReasonAndReportActionThatRequiresAttention(
         };
     }
 
-    const iouReportActionToApproveOrPay = getIOUReportActionToApproveOrPay(optionOrReport, undefined);
+    const iouReportActionToApproveOrPay = getIOUReportActionToApproveOrPay(optionOrReport, optionOrReportRNVP, undefined);
     const iouReportID = getIOUReportIDFromReportActionPreview(iouReportActionToApproveOrPay);
     const transactions = getReportTransactions(iouReportID);
     const hasOnlyPendingTransactions = transactions.length > 0 && transactions.every((t) => isExpensifyCardTransaction(t) && isPending(t));
@@ -3936,8 +3937,13 @@ function getReasonAndReportActionThatRequiresAttention(
  * @param option (report or optionItem)
  * @param parentReportAction (the report action the current report is a thread of)
  */
-function requiresAttentionFromCurrentUser(optionOrReport: OnyxEntry<Report> | OptionData, parentReportAction?: OnyxEntry<ReportAction>, isReportArchived = false) {
-    return !!getReasonAndReportActionThatRequiresAttention(optionOrReport, parentReportAction, isReportArchived);
+function requiresAttentionFromCurrentUser(
+    optionOrReport: OnyxEntry<Report> | OptionData,
+    optionOrReportRNVP: OnyxEntry<ReportNameValuePairs>,
+    parentReportAction?: OnyxEntry<ReportAction>,
+    isReportArchived = false,
+) {
+    return !!getReasonAndReportActionThatRequiresAttention(optionOrReport, optionOrReportRNVP, parentReportAction, isReportArchived);
 }
 
 /**
@@ -8623,6 +8629,7 @@ function hasReportErrorsOtherThanFailedReceipt(
 
 type ShouldReportBeInOptionListParams = {
     report: OnyxEntry<Report>;
+    reportRNVP: OnyxEntry<ReportNameValuePairs>;
     chatReport: OnyxEntry<Report>;
     currentReportId: string | undefined;
     isInFocusMode: boolean;
@@ -8637,6 +8644,7 @@ type ShouldReportBeInOptionListParams = {
 
 function reasonForReportToBeInOptionList({
     report,
+    reportRNVP,
     chatReport,
     currentReportId,
     isInFocusMode,
@@ -8723,7 +8731,7 @@ function reasonForReportToBeInOptionList({
         return CONST.REPORT_IN_LHN_REASONS.HAS_DRAFT_COMMENT;
     }
 
-    if (requiresAttentionFromCurrentUser(report, undefined, isReportArchived)) {
+    if (requiresAttentionFromCurrentUser(report, reportRNVP, undefined, isReportArchived)) {
         return CONST.REPORT_IN_LHN_REASONS.HAS_GBR;
     }
 
@@ -11612,12 +11620,14 @@ function getChatListItemReportName(action: ReportAction & {reportName?: string},
  */
 function generateReportAttributes({
     report,
+    reportRNVP,
     chatReport,
     reportActions,
     transactionViolations,
     isReportArchived = false,
 }: {
     report: OnyxEntry<Report>;
+    reportRNVP: OnyxEntry<ReportNameValuePairs>;
     chatReport: OnyxEntry<Report>;
     reportActions?: OnyxCollection<ReportActions>;
     transactionViolations: OnyxCollection<TransactionViolation[]>;
@@ -11634,7 +11644,7 @@ function generateReportAttributes({
     const hasErrors = Object.entries(reportErrors ?? {}).length > 0;
     const oneTransactionThreadReportID = getOneTransactionThreadReportID(report, chatReport, reportActionsList);
     const parentReportAction = report?.parentReportActionID ? parentReportActionsList?.[report.parentReportActionID] : undefined;
-    const requiresAttention = requiresAttentionFromCurrentUser(report, parentReportAction, isReportArchived);
+    const requiresAttention = requiresAttentionFromCurrentUser(report, reportRNVP, parentReportAction, isReportArchived);
 
     return {
         doesReportHasViolations,

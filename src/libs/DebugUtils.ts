@@ -1332,6 +1332,7 @@ function validateTransactionViolationJSON(json: string) {
  */
 function getReasonForShowingRowInLHN({
     report,
+    reportRNVP,
     chatReport,
     doesReportHaveViolations,
     hasRBR = false,
@@ -1340,6 +1341,7 @@ function getReasonForShowingRowInLHN({
     betas = undefined,
 }: {
     report: OnyxEntry<Report>;
+    reportRNVP: OnyxEntry<ReportNameValuePairs>;
     chatReport: OnyxEntry<Report>;
     doesReportHaveViolations: boolean;
     hasRBR?: boolean;
@@ -1353,6 +1355,7 @@ function getReasonForShowingRowInLHN({
 
     const reason = reasonForReportToBeInOptionList({
         report,
+        reportRNVP,
         chatReport,
         // We can't pass report.reportID because it will cause reason to always be isFocused
         currentReportId: '-1',
@@ -1385,12 +1388,12 @@ type GBRReasonAndReportAction = {
 /**
  * Gets the reason and report action that is causing the GBR to show up in LHN row
  */
-function getReasonAndReportActionForGBRInLHNRow(report: OnyxEntry<Report>, isReportArchived = false): GBRReasonAndReportAction | null {
+function getReasonAndReportActionForGBRInLHNRow(report: OnyxEntry<Report>, reportRNVP: OnyxEntry<ReportNameValuePairs>, isReportArchived = false): GBRReasonAndReportAction | null {
     if (!report) {
         return null;
     }
 
-    const {reason, reportAction} = getReasonAndReportActionThatRequiresAttention(report, undefined, isReportArchived) ?? {};
+    const {reason, reportAction} = getReasonAndReportActionThatRequiresAttention(report, reportRNVP, undefined, isReportArchived) ?? {};
 
     if (reason) {
         return {reason: `debug.reasonGBR.${reason}`, reportAction};

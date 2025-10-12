@@ -10044,7 +10044,11 @@ function canSubmitReport(
     return baseCanSubmit && isManualSubmitEnabled;
 }
 
-function getIOUReportActionToApproveOrPay(chatReport: OnyxEntry<OnyxTypes.Report>, updatedIouReport: OnyxEntry<OnyxTypes.Report>): OnyxEntry<ReportAction> {
+function getIOUReportActionToApproveOrPay(
+    chatReport: OnyxEntry<OnyxTypes.Report>,
+    chatReportRNVP: OnyxEntry<OnyxTypes.ReportNameValuePairs>,
+    updatedIouReport: OnyxEntry<OnyxTypes.Report>,
+): OnyxEntry<ReportAction> {
     const chatReportActions = allReportActions?.[`${ONYXKEYS.COLLECTION.REPORT_ACTIONS}${chatReport?.reportID}`] ?? {};
 
     return Object.values(chatReportActions).find((action) => {
@@ -10055,7 +10059,7 @@ function getIOUReportActionToApproveOrPay(chatReport: OnyxEntry<OnyxTypes.Report
         // This will be fixed as part of https://github.com/Expensify/Expensify/issues/507850
         // eslint-disable-next-line deprecation/deprecation
         const policy = getPolicy(iouReport?.policyID);
-        const shouldShowSettlementButton = canIOUBePaid(iouReport, chatReport, policy) || canApproveIOU(iouReport, policy);
+        const shouldShowSettlementButton = canIOUBePaid(iouReport, chatReport, policy, undefined, undefined, chatReportRNVP) || canApproveIOU(iouReport, policy);
         return action.actionName === CONST.REPORT.ACTIONS.TYPE.REPORT_PREVIEW && shouldShowSettlementButton && !isDeletedAction(action);
     });
 }

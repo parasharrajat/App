@@ -151,12 +151,26 @@ type MiniReport = {
     lastVisibleActionCreated?: string;
 };
 
+type UpdateReportsToDisplayInLHNParems = {
+    displayedReports: ReportsToDisplayInLHN;
+    reports: OnyxCollection<Report>;
+    updatedReportsKeys: string[];
+    currentReportId: string | undefined;
+    isInFocusMode: boolean;
+    betas: OnyxEntry<Beta[]>;
+    policies: OnyxCollection<PartialPolicyForSidebar>;
+    transactionViolations: OnyxCollection<TransactionViolation[]>;
+    reportNameValuePairs?: OnyxCollection<ReportNameValuePairs>;
+    reportAttributes?: ReportAttributesDerivedValue['reports'];
+};
+
 function ensureSingleSpacing(text: string) {
     return text.replace(CONST.REGEX.WHITESPACE, ' ').trim();
 }
 
 function shouldDisplayReportInLHN(
     report: Report,
+    reportRNVP: OnyxEntry<ReportNameValuePairs>,
     reports: OnyxCollection<Report>,
     currentReportId: string | undefined,
     isInFocusMode: boolean,
@@ -203,6 +217,7 @@ function shouldDisplayReportInLHN(
     // Final check for display eligibility
     const shouldDisplay = shouldReportBeInOptionList({
         report,
+        reportRNVP,
         chatReport,
         currentReportId,
         isInFocusMode,
@@ -220,7 +235,6 @@ function getReportsToDisplayInLHN(
     currentReportId: string | undefined,
     reports: OnyxCollection<Report>,
     betas: OnyxEntry<Beta[]>,
-    policies: OnyxCollection<PartialPolicyForSidebar>,
     priorityMode: OnyxEntry<PriorityMode>,
     transactionViolations: OnyxCollection<TransactionViolation[]>,
     reportNameValuePairs?: OnyxCollection<ReportNameValuePairs>,
@@ -235,8 +249,11 @@ function getReportsToDisplayInLHN(
             return;
         }
 
+        const reportRNVP = reportNameValuePairs?.[`${ONYXKEYS.COLLECTION.REPORT_NAME_VALUE_PAIRS}${reportID}`];
+
         const {shouldDisplay, hasErrorsOtherThanFailedReceipt} = shouldDisplayReportInLHN(
             report,
+            reportRNVP,
             reports,
             currentReportId,
             isInFocusMode,
@@ -254,18 +271,17 @@ function getReportsToDisplayInLHN(
     return reportsToDisplay;
 }
 
-function updateReportsToDisplayInLHN(
-    displayedReports: ReportsToDisplayInLHN,
-    reports: OnyxCollection<Report>,
-    updatedReportsKeys: string[],
-    currentReportId: string | undefined,
-    isInFocusMode: boolean,
-    betas: OnyxEntry<Beta[]>,
-    policies: OnyxCollection<PartialPolicyForSidebar>,
-    transactionViolations: OnyxCollection<TransactionViolation[]>,
-    reportNameValuePairs?: OnyxCollection<ReportNameValuePairs>,
-    reportAttributes?: ReportAttributesDerivedValue['reports'],
-) {
+function updateReportsToDisplayInLHN({
+    displayedReports,
+    reports,
+    updatedReportsKeys,
+    currentReportId,
+    isInFocusMode,
+    betas,
+    transactionViolations,
+    reportNameValuePairs,
+    reportAttributes,
+}: UpdateReportsToDisplayInLHNParems) {
     const displayedReportsCopy = {...displayedReports};
     updatedReportsKeys.forEach((reportID) => {
         const report = reports?.[reportID];
@@ -273,8 +289,11 @@ function updateReportsToDisplayInLHN(
             return;
         }
 
+        const reportRNVP = reportNameValuePairs?.[`${ONYXKEYS.COLLECTION.REPORT_NAME_VALUE_PAIRS}${reportID}`];
+
         const {shouldDisplay, hasErrorsOtherThanFailedReceipt} = shouldDisplayReportInLHN(
             report,
+            reportRNVP,
             reports,
             currentReportId,
             isInFocusMode,

@@ -1523,10 +1523,12 @@ function isValidReport(option: SearchOption<Report>, config: IsValidReportsConfi
     const topmostReportId = Navigation.getTopmostReportId();
 
     const chatReport = allReports?.[`${ONYXKEYS.COLLECTION.REPORT}${option.item.chatReportID}`];
+    const reportRNVP = allReportNameValuePairs?.[`${ONYXKEYS.COLLECTION.REPORT_NAME_VALUE_PAIRS}${option.item?.reportID}`];
     const doesReportHaveViolations = shouldDisplayViolationsRBRInLHN(option.item, transactionViolations);
 
     const shouldBeInOptionList = shouldReportBeInOptionList({
         report: option.item,
+        reportRNVP,
         chatReport,
         currentReportId: topmostReportId,
         betas,

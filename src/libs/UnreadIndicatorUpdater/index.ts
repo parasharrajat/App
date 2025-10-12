@@ -49,6 +49,7 @@ function getUnreadReportsForUnreadIndicator(reports: OnyxCollection<Report>, cur
             ReportUtils.isUnread(report, oneTransactionThreadReport, isReportArchived) &&
             ReportUtils.shouldReportBeInOptionList({
                 report,
+                reportRNVP: nameValuePairs,
                 chatReport,
                 currentReportId: currentReportID,
                 betas: [],

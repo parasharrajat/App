@@ -183,6 +183,7 @@ export default createOnyxDerivedValueConfig({
             const isReportArchived = isArchivedReport(reportNameValuePair);
             const {hasAnyViolations, requiresAttention, reportErrors} = generateReportAttributes({
                 report,
+                reportRNVP: reportNameValuePair,
                 chatReport,
                 reportActions,
                 transactionViolations,
