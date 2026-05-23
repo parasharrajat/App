@@ -37,6 +37,7 @@ type GetSearchOnyxUpdateParams = {
     isFromOneTransactionReport?: boolean;
     isInvoice?: boolean;
     transactionThreadReportID: string | undefined;
+    currentUserPersonalDetails?: OnyxEntry<OnyxTypes.PersonalDetails>;
 };
 
 //  Determines whether the current search results should be optimistically updated
@@ -116,9 +117,10 @@ function getSearchOnyxUpdate({
     transactionThreadReportID,
     isFromOneTransactionReport,
     isInvoice,
+    currentUserPersonalDetails,
 }: GetSearchOnyxUpdateParams): OnyxData<typeof ONYXKEYS.COLLECTION.SNAPSHOT> | undefined {
     const toAccountID = participant?.accountID;
-    const deprecatedCurrentUserPersonalDetails = getCurrentUserPersonalDetails();
+    const deprecatedCurrentUserPersonalDetails = currentUserPersonalDetails ?? getCurrentUserPersonalDetails();
     const fromAccountID = deprecatedCurrentUserPersonalDetails?.accountID;
     const currentSearchQueryJSON = getCurrentSearchQueryJSON();
 
