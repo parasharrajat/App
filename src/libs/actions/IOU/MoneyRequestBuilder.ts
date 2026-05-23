@@ -66,7 +66,7 @@ import type ReportAction from '@src/types/onyx/ReportAction';
 import type {OnyxData} from '@src/types/onyx/Request';
 import type {Receipt, TransactionChanges, TransactionCustomUnit, WaypointCollection} from '@src/types/onyx/Transaction';
 import {isEmptyObject} from '@src/types/utils/EmptyObject';
-import {getAllPersonalDetails, getAllReportActionsFromIOU, getAllReportNameValuePairs, getAllReports, getCurrentUserPersonalDetails} from './index';
+import {getAllPersonalDetails, getAllReportActionsFromIOU, getAllReportNameValuePairs, getAllReports} from './index';
 import type {ReplaceReceipt} from './Receipt';
 import {getSearchOnyxUpdate} from './SearchUpdate';
 import type {StartSplitBilActionParams} from './Split';
@@ -391,7 +391,6 @@ function getTransactionWithPreservedLocalReceiptSource(transaction: OnyxTypes.Tr
 
 function buildOnyxDataForMoneyRequest(moneyRequestParams: BuildOnyxDataForMoneyRequestParams): OnyxData<BuildOnyxDataForMoneyRequestKeys> {
     const allReports = getAllReports();
-    const deprecatedCurrentUserPersonalDetails = getCurrentUserPersonalDetails();
     const {
         isNewChatReport,
         shouldCreateNewMoneyRequestReport,
@@ -647,7 +646,7 @@ function buildOnyxDataForMoneyRequest(moneyRequestParams: BuildOnyxDataForMoneyR
                 ? {lastActionType: CONST.REPORT.ACTIONS.TYPE.MARKED_REIMBURSED, stateNum: CONST.REPORT.STATE_NUM.APPROVED, statusNum: CONST.REPORT.STATUS_NUM.REIMBURSED}
                 : undefined),
             hasOutstandingChildRequest: false,
-            lastActorAccountID: deprecatedCurrentUserPersonalDetails?.accountID,
+            lastActorAccountID: currentUserAccountIDParam,
         };
 
         onyxData.optimisticData?.push(
@@ -660,7 +659,7 @@ function buildOnyxDataForMoneyRequest(moneyRequestParams: BuildOnyxDataForMoneyR
                         ? {lastActionType: CONST.REPORT.ACTIONS.TYPE.MARKED_REIMBURSED, stateNum: CONST.REPORT.STATE_NUM.APPROVED, statusNum: CONST.REPORT.STATUS_NUM.REIMBURSED}
                         : undefined),
                     hasOutstandingChildRequest: false,
-                    lastActorAccountID: deprecatedCurrentUserPersonalDetails?.accountID,
+                    lastActorAccountID: currentUserAccountIDParam,
                 },
             },
             {
