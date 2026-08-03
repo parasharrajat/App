@@ -40,7 +40,7 @@ import type {NullishDeep, OnyxCollection, OnyxEntry, OnyxInputValue, OnyxUpdate}
 import cloneDeep from 'lodash/cloneDeep';
 import Onyx from 'react-native-onyx';
 
-import {getAllReportActionsFromIOU, getAllReportNameValuePairs, getAllReports, getAllTransactions, getAllTransactionViolations} from '.';
+import {getAllReportActionsFromIOU, getAllReportNameValuePairs, getAllTransactions, getAllTransactionViolations} from '.';
 import {getReportPreviewAction, maybeUpdateReportNameForFormulaTitle} from './MoneyRequestBuilder';
 
 type PrepareToCleanUpMoneyRequestResult = {
@@ -585,7 +585,6 @@ function getCleanUpTransactionThreadReportOnyxData({
     iouReport?: OnyxEntry<OnyxTypes.Report>;
     chatReport?: OnyxEntry<OnyxTypes.Report>;
 }) {
-    const allReports = getAllReports();
     const allReportActions = getAllReportActionsFromIOU();
     const allReportNameValuePairs = getAllReportNameValuePairs();
 
@@ -597,7 +596,7 @@ function getCleanUpTransactionThreadReportOnyxData({
         let transactionThread = null;
         let transactionThreadReportActions = null;
         if (transactionThreadID) {
-            transactionThread = transactionThreadReportParam ?? allReports?.[`${ONYXKEYS.COLLECTION.REPORT}${transactionThreadID}`] ?? null;
+            transactionThread = transactionThreadReportParam ?? null;
             transactionThreadReportActions = allReportActions?.[`${ONYXKEYS.COLLECTION.REPORT_ACTIONS}${transactionThreadID}`] ?? null;
         }
 
@@ -647,8 +646,8 @@ function getCleanUpTransactionThreadReportOnyxData({
 
     // Update the child comment visible count for reportPreviewAction.
     const iouReportID = isMoneyRequestAction(reportAction) ? reportAction?.reportID : undefined;
-    const iouReport = iouReportParam ?? allReports?.[`${ONYXKEYS.COLLECTION.REPORT}${iouReportID}`];
-    const chatReport = chatReportParam ?? allReports?.[`${ONYXKEYS.COLLECTION.REPORT}${iouReport?.chatReportID}`];
+    const iouReport = iouReportParam;
+    const chatReport = chatReportParam;
     const originalReportPreviewAction = getReportPreviewAction(chatReport?.reportID, iouReport?.reportID) ?? undefined;
     let reportPreviewAction = updatedReportPreviewAction ?? originalReportPreviewAction;
     if (

@@ -24,6 +24,7 @@ import isSearchTopmostFullScreenRoute from '@libs/Navigation/helpers/isSearchTop
 import Navigation from '@libs/Navigation/Navigation';
 import type {PlatformStackScreenProps} from '@libs/Navigation/PlatformStackNavigation/types';
 import type {MergeTransactionNavigatorParamList} from '@libs/Navigation/types';
+import {getIOUActionForReportID, getReportAction} from '@libs/ReportActionsUtils';
 import {findSelfDMReportID} from '@libs/ReportUtils';
 import type {SkeletonSpanReasonAttributes} from '@libs/telemetry/useSkeletonSpan';
 
@@ -75,6 +76,13 @@ function DynamicConfirmationPage({route}: DynamicConfirmationPageProps) {
         selector: isTrackIntentUserSelector,
     });
 
+    const sourceIouReportID = sourceTransaction?.reportID;
+    const [sourceIouReport] = useOnyx(`${ONYXKEYS.COLLECTION.REPORT}${getNonEmptyStringOnyxID(sourceIouReportID)}`);
+    const sourceIouAction = getIOUActionForReportID(sourceTransaction?.reportID ?? '', sourceTransaction?.transactionID ?? '');
+    const sourceTransactionThreadReportID = sourceIouAction?.childReportID;
+    const [sourceTransactionThreadReport] = useOnyx(`${ONYXKEYS.COLLECTION.REPORT}${getNonEmptyStringOnyxID(sourceTransactionThreadReportID)}`);
+    const [sourceChatReport] = useOnyx(`${ONYXKEYS.COLLECTION.REPORT}${getNonEmptyStringOnyxID(sourceIouReport?.chatReportID)}`);
+
     const selfDMReport = useSelfDMReport();
     const [selfDMReportActions] = useOnyx(`${ONYXKEYS.COLLECTION.REPORT_ACTIONS}${getNonEmptyStringOnyxID(selfDMReport?.reportID)}`);
 
@@ -97,6 +105,9 @@ function DynamicConfirmationPage({route}: DynamicConfirmationPageProps) {
             targetTransactionThreadReport,
             targetTransactionThreadParentReport,
             targetTransactionThreadParentReportNextStep,
+            sourceTransactionThreadReport,
+            sourceIouReport,
+            sourceChatReport,
             iouReportOwnerLogin,
             allTransactionViolations,
             policy: targetTransactionPolicy,
