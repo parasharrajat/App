@@ -74,8 +74,6 @@ type DeleteMoneyRequestFunctionParams = {
     currentUserEmail: string;
     transactionThreadReport: OnyxEntry<OnyxTypes.Report>;
     policy?: OnyxEntry<OnyxTypes.Policy>;
-    transactionThreadReportActions?: OnyxEntry<OnyxTypes.ReportActions>;
-    reportNameValuePairs?: OnyxEntry<OnyxTypes.ReportNameValuePairs>;
 };
 
 /** Builds the Onyx surface a delete needs to touch: updated report + preview action, thread/report deletion flags, sticky-total marker. */
@@ -575,8 +573,6 @@ function getCleanUpTransactionThreadReportOnyxData({
     transactionThreadReport: transactionThreadReportParam,
     iouReport: iouReportParam,
     chatReport: chatReportParam,
-    transactionThreadReportActions: transactionThreadReportActionsParam,
-    reportNameValuePairs: reportNameValuePairsParam,
 }: {
     transactionThreadID?: string;
     shouldDeleteTransactionThread: boolean;
@@ -588,8 +584,6 @@ function getCleanUpTransactionThreadReportOnyxData({
     transactionThreadReport?: OnyxEntry<OnyxTypes.Report>;
     iouReport?: OnyxEntry<OnyxTypes.Report>;
     chatReport?: OnyxEntry<OnyxTypes.Report>;
-    transactionThreadReportActions?: OnyxEntry<OnyxTypes.ReportActions>;
-    reportNameValuePairs?: OnyxEntry<OnyxTypes.ReportNameValuePairs>;
 }) {
     const allReports = getAllReports();
     const allReportActions = getAllReportActionsFromIOU();
@@ -604,7 +598,7 @@ function getCleanUpTransactionThreadReportOnyxData({
         let transactionThreadReportActions = null;
         if (transactionThreadID) {
             transactionThread = transactionThreadReportParam ?? allReports?.[`${ONYXKEYS.COLLECTION.REPORT}${transactionThreadID}`] ?? null;
-            transactionThreadReportActions = transactionThreadReportActionsParam ?? allReportActions?.[`${ONYXKEYS.COLLECTION.REPORT_ACTIONS}${transactionThreadID}`] ?? null;
+            transactionThreadReportActions = allReportActions?.[`${ONYXKEYS.COLLECTION.REPORT_ACTIONS}${transactionThreadID}`] ?? null;
         }
 
         optimisticData.push(
@@ -667,7 +661,7 @@ function getCleanUpTransactionThreadReportOnyxData({
     ) {
         let canUserPerformWriteAction = true;
         if (chatReport) {
-            const reportNameValuePairs = reportNameValuePairsParam ?? allReportNameValuePairs?.[`${ONYXKEYS.COLLECTION.REPORT_NAME_VALUE_PAIRS}${iouReport?.reportID}`];
+            const reportNameValuePairs = allReportNameValuePairs?.[`${ONYXKEYS.COLLECTION.REPORT_NAME_VALUE_PAIRS}${iouReport?.reportID}`];
             const isArchivedExpenseReport = isArchivedReport(reportNameValuePairs);
 
             canUserPerformWriteAction = !!canUserPerformWriteActionReportUtils(chatReport, isChatIOUReportArchived ?? isArchivedExpenseReport);
@@ -749,8 +743,6 @@ function deleteMoneyRequest({
     currentUserAccountID,
     currentUserEmail,
     policy,
-    transactionThreadReportActions,
-    reportNameValuePairs,
 }: DeleteMoneyRequestFunctionParams) {
     if (!transactionID) {
         return;
@@ -905,8 +897,6 @@ function deleteMoneyRequest({
         transactionThreadReport,
         iouReport,
         chatReport,
-        transactionThreadReportActions,
-        reportNameValuePairs,
     });
     optimisticData.push(...cleanUpTransactionThreadReportOnyxData.optimisticData);
 

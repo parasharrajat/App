@@ -650,10 +650,6 @@ function getDeleteTrackExpenseInformation(
     actionableWhisperReportActionID = '',
     resolution = '',
     shouldRemoveIOUTransaction = true,
-    transactionThreadReport?: OnyxEntry<OnyxTypes.Report>,
-    transactionThreadReportActions?: OnyxEntry<OnyxTypes.ReportActions>,
-    reportNameValuePairs?: OnyxEntry<OnyxTypes.ReportNameValuePairs>,
-    iouReport?: OnyxEntry<OnyxTypes.Report>,
 ) {
     // STEP 1: Get all collections we're updating
     const transaction = getAllTransactions()?.[`${ONYXKEYS.COLLECTION.TRANSACTION}${transactionID}`];
@@ -730,10 +726,6 @@ function getDeleteTrackExpenseInformation(
         shouldDeleteTransactionThread,
         reportAction,
         currentUserAccountID,
-        transactionThreadReport,
-        iouReport,
-        transactionThreadReportActions,
-        reportNameValuePairs,
     });
     optimisticData.push(...cleanUpTransactionThreadReportOnyxData.optimisticData);
 
@@ -2976,9 +2968,6 @@ function deleteTrackExpense({
 
     const whisperAction = getTrackExpenseActionableWhisper(transactionID, chatReportID, chatReportActions);
     const actionableWhisperReportActionID = whisperAction?.reportActionID;
-    const transactionThreadReportActions = chatReportActions?.[`${ONYXKEYS.COLLECTION.REPORT_ACTIONS}${reportAction.childReportID}`];
-    const allReportNameValuePairs = getAllReportNameValuePairs();
-    const reportNameValuePairsForIOU = allReportNameValuePairs?.[`${ONYXKEYS.COLLECTION.REPORT_NAME_VALUE_PAIRS}${iouReport?.reportID}`];
     const {parameters, optimisticData, successData, failureData} = getDeleteTrackExpenseInformation(
         chatReport,
         transactionID,
@@ -2990,10 +2979,6 @@ function deleteTrackExpense({
         actionableWhisperReportActionID,
         CONST.REPORT.ACTIONABLE_TRACK_EXPENSE_WHISPER_RESOLUTION.NOTHING,
         false,
-        transactionThreadReport,
-        transactionThreadReportActions,
-        reportNameValuePairsForIOU,
-        iouReport,
     );
 
     // STEP 6: Make the API request
