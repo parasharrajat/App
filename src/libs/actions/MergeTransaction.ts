@@ -19,7 +19,7 @@ import findAllMatchingDynamicSuffixes from '@libs/Navigation/helpers/dynamicRout
 import getPathWithoutDynamicSuffix from '@libs/Navigation/helpers/dynamicRoutesUtils/getPathWithoutDynamicSuffix';
 import Navigation from '@libs/Navigation/Navigation';
 import {isPaidGroupPolicy, isPolicyAdmin} from '@libs/PolicyUtils';
-import {getIOUActionForReportID, getReportAction, getTrackExpenseActionableWhisper} from '@libs/ReportActionsUtils';
+import {getAllReportActions, getIOUActionForReportID, getReportAction, getTrackExpenseActionableWhisper} from '@libs/ReportActionsUtils';
 import {
     buildOptimisticIOUReportAction,
     getReportOrDraftReport,
@@ -42,6 +42,7 @@ import type {
     PolicyTagLists,
     Report,
     ReportActions,
+    ReportNameValuePairs,
     ReportNextStepDeprecated,
     Transaction,
     TransactionViolations,
@@ -392,6 +393,7 @@ type MergeTransactionRequestParams = {
     selfDMReportActions: OnyxEntry<ReportActions>;
     reportPolicyTags: OnyxEntry<PolicyTagLists>;
     isTrackIntentUser: boolean | undefined;
+    reportNameValuePairs?: OnyxEntry<ReportNameValuePairs>;
 };
 /**
  * Merges two transactions by updating the target transaction with selected fields and deleting the source transaction.
@@ -423,6 +425,7 @@ function mergeTransactionRequest({
     selfDMReportActions,
     reportPolicyTags,
     isTrackIntentUser,
+    reportNameValuePairs,
 }: MergeTransactionRequestParams) {
     // For both unreported expenses and expense reports, negate the display amount when storing
     // This preserves the user's chosen sign while following the storage convention
@@ -594,6 +597,13 @@ function mergeTransactionRequest({
                 shouldDeleteTransactionThread,
                 reportAction: sourceIouAction,
                 currentUserAccountID: currentUserAccountIDParam,
+                transactionThread: getReportOrDraftReport(sourceTransactionThreadReportID),
+                transactionThreadReportActions: getAllReportActions(sourceTransactionThreadReportID),
+                iouReport: deletableReport,
+                chatReport: getReportOrDraftReport(deletableReport?.chatReportID),
+                chatReportActions: getAllReportActions(deletableReport?.chatReportID),
+                iouReportActions: getAllReportActions(deletableReport?.reportID),
+                reportNameValuePairs,
             });
             optimisticSourceReportActionData.push(...cleanUpSourceTransactionThreadReportOnyxData.optimisticData);
             successSourceReportActionData.push(...cleanUpSourceTransactionThreadReportOnyxData.successData);

@@ -216,6 +216,7 @@ type DeleteTrackExpenseParams = {
     currentUserAccountID: number;
     currentUserEmail: string;
     policy?: OnyxEntry<OnyxTypes.Policy>;
+    reportNameValuePairs?: OnyxEntry<OnyxTypes.ReportNameValuePairs>;
 };
 
 type BuildOnyxDataForTrackExpenseParams = {
@@ -725,6 +726,8 @@ function getDeleteTrackExpenseInformation(
         transactionThreadID,
         shouldDeleteTransactionThread,
         currentUserAccountID,
+        transactionThread: getReportOrDraftReport(transactionThreadID),
+        transactionThreadReportActions: getAllReportActions(transactionThreadID),
     });
     optimisticData.push(...cleanUpTransactionThreadReportOnyxData.optimisticData);
 
@@ -2928,6 +2931,7 @@ function deleteTrackExpense({
     currentUserAccountID,
     currentUserEmail,
     policy,
+    reportNameValuePairs,
 }: DeleteTrackExpenseParams) {
     if (!chatReportID || !transactionID) {
         return;
@@ -2963,6 +2967,7 @@ function deleteTrackExpense({
             currentUserAccountID,
             currentUserEmail,
             policy,
+            reportNameValuePairs,
         });
         return urlToNavigateBack;
     }

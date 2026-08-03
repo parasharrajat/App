@@ -11,6 +11,7 @@ function useGetIOUReportFromReportAction(reportAction: OnyxTypes.ReportAction | 
     iouReport: OnyxTypes.Report | undefined;
     chatReport: OnyxTypes.Report | undefined;
     isChatIOUReportArchived: boolean;
+    iouReportNameValuePairs: OnyxTypes.ReportNameValuePairs | undefined;
 } {
     // Prefer the action's own reportID; fall back to originalMessage.IOUReportID only when the backend omits reportID.
     // Preferring reportID keeps moved expenses correct (the moved action carries a stale IOUReportID from the source report).
@@ -21,7 +22,8 @@ function useGetIOUReportFromReportAction(reportAction: OnyxTypes.ReportAction | 
     const iouReport = isIOUReport(candidateIOUReport) || isExpenseReport(candidateIOUReport) ? candidateIOUReport : undefined;
     const [chatReport] = useOnyx(`${ONYXKEYS.COLLECTION.REPORT}${iouReport?.chatReportID}`);
     const isChatIOUReportArchived = useReportIsArchived(chatReport?.reportID);
-    return {iouReport, chatReport, isChatIOUReportArchived};
+    const [iouReportNameValuePairs] = useOnyx(`${ONYXKEYS.COLLECTION.REPORT_NAME_VALUE_PAIRS}${iouReport?.reportID}`);
+    return {iouReport, chatReport, isChatIOUReportArchived, iouReportNameValuePairs};
 }
 
 export default useGetIOUReportFromReportAction;

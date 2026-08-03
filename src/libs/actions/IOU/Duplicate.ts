@@ -175,6 +175,7 @@ type MergeDuplicatesFuncParams = MergeDuplicatesParams & {
     taxValue?: string;
     allTransactionViolations: OnyxCollection<OnyxTypes.TransactionViolations>;
     allReportActionsList: OnyxCollection<OnyxTypes.ReportActions>;
+    allReportNameValuePairsList?: OnyxCollection<OnyxTypes.ReportNameValuePairs>;
 };
 
 /** Merge several transactions into one by updating the fields of the one we want to keep and deleting the rest */
@@ -186,6 +187,7 @@ function mergeDuplicates({
     taxValue,
     allTransactionViolations,
     allReportActionsList,
+    allReportNameValuePairsList,
     ...params
 }: MergeDuplicatesFuncParams) {
     const allParams: MergeDuplicatesParams = {...params};
@@ -297,6 +299,8 @@ function mergeDuplicates({
         let updatedReportPreviewAction;
         for (const [index, iouAction] of actions.entries()) {
             const transactionThreadID = iouAction.childReportID;
+            const iouActionReport = allReports?.[`${ONYXKEYS.COLLECTION.REPORT}${iouAction.reportID}`];
+            const iouActionChatReport = allReports?.[`${ONYXKEYS.COLLECTION.REPORT}${iouActionReport?.chatReportID}`];
             const cleanUp = getCleanUpTransactionThreadReportOnyxData({
                 transactionThreadID,
                 shouldDeleteTransactionThread: !!transactionThreadID,
@@ -304,6 +308,13 @@ function mergeDuplicates({
                 updatedReportPreviewAction,
                 shouldAddUpdatedReportPreviewActionToOnyxData: index === actions.length - 1,
                 currentUserAccountID,
+                transactionThread: allReports?.[`${ONYXKEYS.COLLECTION.REPORT}${transactionThreadID}`],
+                transactionThreadReportActions: allReportActionsList?.[`${ONYXKEYS.COLLECTION.REPORT_ACTIONS}${transactionThreadID}`],
+                iouReport: iouActionReport,
+                chatReport: iouActionChatReport,
+                chatReportActions: allReportActionsList?.[`${ONYXKEYS.COLLECTION.REPORT_ACTIONS}${iouActionChatReport?.reportID}`],
+                iouReportActions: allReportActionsList?.[`${ONYXKEYS.COLLECTION.REPORT_ACTIONS}${iouAction.reportID}`],
+                reportNameValuePairs: allReportNameValuePairsList?.[`${ONYXKEYS.COLLECTION.REPORT_NAME_VALUE_PAIRS}${iouAction.reportID}`],
             });
             cleanUpTransactionThreadReportsOptimisticData.push(...cleanUp.optimisticData);
             cleanUpTransactionThreadReportsSuccessData.push(...cleanUp.successData);

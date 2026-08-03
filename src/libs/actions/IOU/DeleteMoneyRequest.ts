@@ -40,7 +40,7 @@ import type {NullishDeep, OnyxCollection, OnyxEntry, OnyxInputValue, OnyxUpdate}
 import cloneDeep from 'lodash/cloneDeep';
 import Onyx from 'react-native-onyx';
 
-import {getAllReportActionsFromIOU, getAllReportNameValuePairs, getAllReports, getAllTransactions, getAllTransactionViolations} from '.';
+import {getAllReportActionsFromIOU, getAllTransactions, getAllTransactionViolations} from '.';
 import {getReportPreviewAction, maybeUpdateReportNameForFormulaTitle} from './MoneyRequestBuilder';
 
 type PrepareToCleanUpMoneyRequestResult = {
@@ -55,6 +55,8 @@ type PrepareToCleanUpMoneyRequestResult = {
     transactionViolations: OnyxEntry<OnyxTypes.TransactionViolations>;
     reportPreviewAction: OnyxInputValue<OnyxTypes.ReportAction<typeof CONST.REPORT.ACTIONS.TYPE.REPORT_PREVIEW>>;
     iouReportActions: OnyxEntry<OnyxTypes.ReportActions>;
+    transactionThreadReportActions: OnyxEntry<OnyxTypes.ReportActions>;
+    chatReportActions: OnyxEntry<OnyxTypes.ReportActions>;
     isTotalIndeterminate: boolean;
 };
 
@@ -74,6 +76,7 @@ type DeleteMoneyRequestFunctionParams = {
     currentUserEmail: string;
     transactionThreadReport: OnyxEntry<OnyxTypes.Report>;
     policy?: OnyxEntry<OnyxTypes.Policy>;
+    reportNameValuePairs?: OnyxEntry<OnyxTypes.ReportNameValuePairs>;
 };
 
 /** Builds the Onyx surface a delete needs to touch: updated report + preview action, thread/report deletion flags, sticky-total marker. */
@@ -302,6 +305,8 @@ function prepareToCleanUpMoneyRequest(
         transactionViolations,
         reportPreviewAction,
         iouReportActions,
+        transactionThreadReportActions: allReportActions?.[`${ONYXKEYS.COLLECTION.REPORT_ACTIONS}${transactionThreadReport?.reportID}`],
+        chatReportActions: allReportActions?.[`${ONYXKEYS.COLLECTION.REPORT_ACTIONS}${chatReport?.reportID}`],
         isTotalIndeterminate,
     };
 }
@@ -570,6 +575,13 @@ function getCleanUpTransactionThreadReportOnyxData({
     updatedReportPreviewAction,
     shouldAddUpdatedReportPreviewActionToOnyxData = true,
     currentUserAccountID,
+    transactionThread: transactionThreadParam,
+    transactionThreadReportActions: transactionThreadReportActionsParam,
+    iouReport,
+    chatReport,
+    chatReportActions,
+    iouReportActions,
+    reportNameValuePairs,
 }: {
     transactionThreadID?: string;
     shouldDeleteTransactionThread: boolean;
@@ -578,11 +590,14 @@ function getCleanUpTransactionThreadReportOnyxData({
     updatedReportPreviewAction?: ReportAction;
     shouldAddUpdatedReportPreviewActionToOnyxData?: boolean;
     currentUserAccountID: number;
+    transactionThread?: OnyxEntry<OnyxTypes.Report>;
+    transactionThreadReportActions?: OnyxEntry<OnyxTypes.ReportActions>;
+    iouReport?: OnyxEntry<OnyxTypes.Report>;
+    chatReport?: OnyxEntry<OnyxTypes.Report>;
+    chatReportActions?: OnyxEntry<OnyxTypes.ReportActions>;
+    iouReportActions?: OnyxEntry<OnyxTypes.ReportActions>;
+    reportNameValuePairs?: OnyxEntry<OnyxTypes.ReportNameValuePairs>;
 }) {
-    const allReports = getAllReports();
-    const allReportActions = getAllReportActionsFromIOU();
-    const allReportNameValuePairs = getAllReportNameValuePairs();
-
     const optimisticData: Array<OnyxUpdate<typeof ONYXKEYS.COLLECTION.REPORT | typeof ONYXKEYS.COLLECTION.REPORT_ACTIONS>> = [];
     const successData: Array<OnyxUpdate<typeof ONYXKEYS.COLLECTION.REPORT | typeof ONYXKEYS.COLLECTION.REPORT_ACTIONS>> = [];
     const failureData: Array<OnyxUpdate<typeof ONYXKEYS.COLLECTION.REPORT | typeof ONYXKEYS.COLLECTION.REPORT_ACTIONS>> = [];
@@ -591,8 +606,8 @@ function getCleanUpTransactionThreadReportOnyxData({
         let transactionThread = null;
         let transactionThreadReportActions = null;
         if (transactionThreadID) {
-            transactionThread = allReports?.[`${ONYXKEYS.COLLECTION.REPORT}${transactionThreadID}`] ?? null;
-            transactionThreadReportActions = allReportActions?.[`${ONYXKEYS.COLLECTION.REPORT_ACTIONS}${transactionThreadID}`] ?? null;
+            transactionThread = transactionThreadParam ?? null;
+            transactionThreadReportActions = transactionThreadReportActionsParam ?? null;
         }
 
         optimisticData.push(
@@ -641,9 +656,7 @@ function getCleanUpTransactionThreadReportOnyxData({
 
     // Update the child comment visible count for reportPreviewAction.
     const iouReportID = isMoneyRequestAction(reportAction) ? reportAction?.reportID : undefined;
-    const iouReport = allReports?.[`${ONYXKEYS.COLLECTION.REPORT}${iouReportID}`];
-    const chatReport = allReports?.[`${ONYXKEYS.COLLECTION.REPORT}${iouReport?.chatReportID}`];
-    const originalReportPreviewAction = getReportPreviewAction(chatReport?.reportID, iouReport?.reportID) ?? undefined;
+    const originalReportPreviewAction = getReportPreviewAction(chatReport?.reportID, iouReport?.reportID, chatReportActions) ?? undefined;
     let reportPreviewAction = updatedReportPreviewAction ?? originalReportPreviewAction;
     if (
         originalReportPreviewAction?.reportActionID &&
@@ -655,12 +668,14 @@ function getCleanUpTransactionThreadReportOnyxData({
     ) {
         let canUserPerformWriteAction = true;
         if (chatReport) {
-            const reportNameValuePairs = allReportNameValuePairs?.[`${ONYXKEYS.COLLECTION.REPORT_NAME_VALUE_PAIRS}${iouReport?.reportID}`];
             const isArchivedExpenseReport = isArchivedReport(reportNameValuePairs);
 
             canUserPerformWriteAction = !!canUserPerformWriteActionReportUtils(chatReport, isChatIOUReportArchived ?? isArchivedExpenseReport);
         }
-        const lastVisibleAction = getLastVisibleAction(iouReportID, canUserPerformWriteAction);
+        const iouReportActionsCollection = iouReportActions
+            ? ({[`${ONYXKEYS.COLLECTION.REPORT_ACTIONS}${iouReportID}`]: iouReportActions} as OnyxCollection<OnyxTypes.ReportActions>)
+            : undefined;
+        const lastVisibleAction = getLastVisibleAction(iouReportID, canUserPerformWriteAction, {}, iouReportActionsCollection);
 
         const {childVisibleActionCount, childCommenterCount, childLastVisibleActionCreated, childOldestFourAccountIDs} = updateOptimisticParentReportAction(
             reportPreviewAction,
@@ -737,6 +752,7 @@ function deleteMoneyRequest({
     currentUserAccountID,
     currentUserEmail,
     policy,
+    reportNameValuePairs,
 }: DeleteMoneyRequestFunctionParams) {
     if (!transactionID) {
         return;
@@ -754,6 +770,8 @@ function deleteMoneyRequest({
         transactionViolations,
         reportPreviewAction,
         iouReportActions,
+        transactionThreadReportActions,
+        chatReportActions,
         isTotalIndeterminate,
     } = prepareToCleanUpMoneyRequest(
         transactionID,
@@ -888,6 +906,13 @@ function deleteMoneyRequest({
         reportAction,
         isChatIOUReportArchived,
         currentUserAccountID,
+        transactionThread: transactionThreadReport,
+        transactionThreadReportActions,
+        iouReport,
+        chatReport,
+        chatReportActions,
+        iouReportActions,
+        reportNameValuePairs,
     });
     optimisticData.push(...cleanUpTransactionThreadReportOnyxData.optimisticData);
 

@@ -78,6 +78,9 @@ function DynamicConfirmationPage({route}: DynamicConfirmationPageProps) {
     const selfDMReport = useSelfDMReport();
     const [selfDMReportActions] = useOnyx(`${ONYXKEYS.COLLECTION.REPORT_ACTIONS}${getNonEmptyStringOnyxID(selfDMReport?.reportID)}`);
 
+    const transactionToDeleteReportID = mergeTransaction?.reportID === targetTransaction?.reportID ? sourceTransaction?.reportID : targetTransaction?.reportID;
+    const [reportNameValuePairs] = useOnyx(`${ONYXKEYS.COLLECTION.REPORT_NAME_VALUE_PAIRS}${getNonEmptyStringOnyxID(transactionToDeleteReportID)}`);
+
     // Build the merged transaction data for display
     const mergedTransactionData = buildMergedTransactionData(targetTransaction, mergeTransaction);
 
@@ -110,6 +113,7 @@ function DynamicConfirmationPage({route}: DynamicConfirmationPageProps) {
             selfDMReport,
             selfDMReportActions,
             reportPolicyTags,
+            reportNameValuePairs,
         });
 
         const reportIDToDismiss = reportID !== CONST.REPORT.UNREPORTED_REPORT_ID ? reportID : undefined;

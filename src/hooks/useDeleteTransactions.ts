@@ -365,6 +365,7 @@ function useDeleteTransactions({report, reportActions, policy}: UseDeleteTransac
                     currentUserAccountID: currentUserPersonalDetails.accountID,
                     currentUserEmail: currentUserPersonalDetails.email ?? '',
                     policy: iouPolicy,
+                    reportNameValuePairs: allReportNameValuePairs?.[`${ONYXKEYS.COLLECTION.REPORT_NAME_VALUE_PAIRS}${iouReportID}`],
                 });
                 deletedTransactionIDs.push(transactionID);
                 if (action.childReportID) {

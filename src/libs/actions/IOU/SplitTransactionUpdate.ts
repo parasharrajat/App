@@ -1390,6 +1390,11 @@ function updateSplitTransactions({
                 updatedReportPreviewAction: (updatedReportPreviewAction ?? originalReportPreviewAction) as OnyxTypes.ReportAction,
                 shouldAddUpdatedReportPreviewActionToOnyxData: false,
                 currentUserAccountID: currentUserPersonalDetails.accountID,
+                iouReport: splitTransactionReport,
+                chatReport: allReportsList?.[`${ONYXKEYS.COLLECTION.REPORT}${splitTransactionReport?.chatReportID}`],
+                chatReportActions: allReportActionsList?.[`${ONYXKEYS.COLLECTION.REPORT_ACTIONS}${splitTransactionReport?.chatReportID}`],
+                iouReportActions: splitReportActions,
+                reportNameValuePairs: allReportNameValuePairsList?.[`${ONYXKEYS.COLLECTION.REPORT_NAME_VALUE_PAIRS}${splitReportID}`],
             });
             updatedReportPreviewAction = cleanUpTransactionThreadReportOnyxData.updatedReportPreviewAction;
         }
@@ -1634,12 +1639,21 @@ function updateSplitTransactions({
                     }),
                 };
 
+                const iouActionReport = allReportsList?.[`${ONYXKEYS.COLLECTION.REPORT}${iouActionToCleanUp.reportID}`];
+                const iouActionChatReport = allReportsList?.[`${ONYXKEYS.COLLECTION.REPORT}${iouActionReport?.chatReportID}`];
                 const {optimisticData, successData, failureData} = getCleanUpTransactionThreadReportOnyxData({
                     transactionThreadID: iouActionToCleanUp.childReportID,
                     shouldDeleteTransactionThread: true,
                     reportAction: iouActionToCleanUp,
                     updatedReportPreviewAction: updatedReportPreviewAction as OnyxTypes.ReportAction,
                     currentUserAccountID: currentUserPersonalDetails.accountID,
+                    transactionThread: allReportsList?.[`${ONYXKEYS.COLLECTION.REPORT}${iouActionToCleanUp.childReportID}`],
+                    transactionThreadReportActions: allReportActionsList?.[`${ONYXKEYS.COLLECTION.REPORT_ACTIONS}${iouActionToCleanUp.childReportID}`],
+                    iouReport: iouActionReport,
+                    chatReport: iouActionChatReport,
+                    chatReportActions: allReportActionsList?.[`${ONYXKEYS.COLLECTION.REPORT_ACTIONS}${iouActionChatReport?.reportID}`],
+                    iouReportActions: allReportActionsList?.[`${ONYXKEYS.COLLECTION.REPORT_ACTIONS}${iouActionToCleanUp.reportID}`],
+                    reportNameValuePairs: allReportNameValuePairsList?.[`${ONYXKEYS.COLLECTION.REPORT_NAME_VALUE_PAIRS}${iouActionToCleanUp.reportID}`],
                 });
 
                 onyxData.optimisticData?.push(...optimisticData);
