@@ -349,6 +349,8 @@ function useDeleteTransactions({report, reportActions, policy}: UseDeleteTransac
                 const chatIOUReportID = chatReport?.reportID;
                 const isChatIOUReportArchived = isArchivedReport(allReportNameValuePairs?.[`${ONYXKEYS.COLLECTION.REPORT_NAME_VALUE_PAIRS}${chatIOUReportID}`]);
                 const iouPolicy = iouReport?.policyID ? allPolicies?.[`${ONYXKEYS.COLLECTION.POLICY}${iouReport.policyID}`] : undefined;
+                const transactionThreadReportActions = allReportActions?.[`${ONYXKEYS.COLLECTION.REPORT_ACTIONS}${action.childReportID}`];
+                const reportNameValuePairsForIOU = allReportNameValuePairs?.[`${ONYXKEYS.COLLECTION.REPORT_NAME_VALUE_PAIRS}${iouReport?.reportID}`];
                 deleteMoneyRequest({
                     transactionID,
                     reportAction: action,
@@ -365,6 +367,8 @@ function useDeleteTransactions({report, reportActions, policy}: UseDeleteTransac
                     currentUserAccountID: currentUserPersonalDetails.accountID,
                     currentUserEmail: currentUserPersonalDetails.email ?? '',
                     policy: iouPolicy,
+                    transactionThreadReportActions,
+                    reportNameValuePairs: reportNameValuePairsForIOU,
                 });
                 deletedTransactionIDs.push(transactionID);
                 if (action.childReportID) {
