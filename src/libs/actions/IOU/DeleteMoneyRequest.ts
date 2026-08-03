@@ -570,6 +570,9 @@ function getCleanUpTransactionThreadReportOnyxData({
     updatedReportPreviewAction,
     shouldAddUpdatedReportPreviewActionToOnyxData = true,
     currentUserAccountID,
+    transactionThreadReport: transactionThreadReportParam,
+    iouReport: iouReportParam,
+    chatReport: chatReportParam,
 }: {
     transactionThreadID?: string;
     shouldDeleteTransactionThread: boolean;
@@ -578,6 +581,9 @@ function getCleanUpTransactionThreadReportOnyxData({
     updatedReportPreviewAction?: ReportAction;
     shouldAddUpdatedReportPreviewActionToOnyxData?: boolean;
     currentUserAccountID: number;
+    transactionThreadReport?: OnyxEntry<OnyxTypes.Report>;
+    iouReport?: OnyxEntry<OnyxTypes.Report>;
+    chatReport?: OnyxEntry<OnyxTypes.Report>;
 }) {
     const allReports = getAllReports();
     const allReportActions = getAllReportActionsFromIOU();
@@ -591,7 +597,7 @@ function getCleanUpTransactionThreadReportOnyxData({
         let transactionThread = null;
         let transactionThreadReportActions = null;
         if (transactionThreadID) {
-            transactionThread = allReports?.[`${ONYXKEYS.COLLECTION.REPORT}${transactionThreadID}`] ?? null;
+            transactionThread = transactionThreadReportParam ?? allReports?.[`${ONYXKEYS.COLLECTION.REPORT}${transactionThreadID}`] ?? null;
             transactionThreadReportActions = allReportActions?.[`${ONYXKEYS.COLLECTION.REPORT_ACTIONS}${transactionThreadID}`] ?? null;
         }
 
@@ -641,8 +647,8 @@ function getCleanUpTransactionThreadReportOnyxData({
 
     // Update the child comment visible count for reportPreviewAction.
     const iouReportID = isMoneyRequestAction(reportAction) ? reportAction?.reportID : undefined;
-    const iouReport = allReports?.[`${ONYXKEYS.COLLECTION.REPORT}${iouReportID}`];
-    const chatReport = allReports?.[`${ONYXKEYS.COLLECTION.REPORT}${iouReport?.chatReportID}`];
+    const iouReport = iouReportParam ?? allReports?.[`${ONYXKEYS.COLLECTION.REPORT}${iouReportID}`];
+    const chatReport = chatReportParam ?? allReports?.[`${ONYXKEYS.COLLECTION.REPORT}${iouReport?.chatReportID}`];
     const originalReportPreviewAction = getReportPreviewAction(chatReport?.reportID, iouReport?.reportID) ?? undefined;
     let reportPreviewAction = updatedReportPreviewAction ?? originalReportPreviewAction;
     if (
@@ -888,6 +894,9 @@ function deleteMoneyRequest({
         reportAction,
         isChatIOUReportArchived,
         currentUserAccountID,
+        transactionThreadReport,
+        iouReport,
+        chatReport,
     });
     optimisticData.push(...cleanUpTransactionThreadReportOnyxData.optimisticData);
 
