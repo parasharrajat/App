@@ -1380,16 +1380,22 @@ function updateSplitTransactions({
             undefined,
             undefined,
             isReportArchived || undeletedTransaction?.transactionID === forceDeleteSplitTransactionID,
+            allReportsList?.[`${ONYXKEYS.COLLECTION.REPORT}${currentReportAction.childReportID}`],
+            allReportsList?.[`${ONYXKEYS.COLLECTION.REPORT}${currentReportAction.reportID}`],
         );
 
         // getDeleteTrackExpenseInformation only handles deleting the transaction report thread, so we need to update the report preview action here
         if (originalReportPreviewAction) {
+            const iouReportForCleanup = allReportsList?.[`${ONYXKEYS.COLLECTION.REPORT}${currentReportAction.reportID}`];
+            const chatReportForCleanup = allReportsList?.[`${ONYXKEYS.COLLECTION.REPORT}${iouReportForCleanup?.chatReportID}`];
             const cleanUpTransactionThreadReportOnyxData = getCleanUpTransactionThreadReportOnyxData({
                 shouldDeleteTransactionThread: false,
                 reportAction: currentReportAction,
                 updatedReportPreviewAction: (updatedReportPreviewAction ?? originalReportPreviewAction) as OnyxTypes.ReportAction,
                 shouldAddUpdatedReportPreviewActionToOnyxData: false,
                 currentUserAccountID: currentUserPersonalDetails.accountID,
+                iouReport: iouReportForCleanup,
+                chatReport: chatReportForCleanup,
             });
             updatedReportPreviewAction = cleanUpTransactionThreadReportOnyxData.updatedReportPreviewAction;
         }
@@ -1634,12 +1640,17 @@ function updateSplitTransactions({
                     }),
                 };
 
+                const iouReportForCleanup = allReportsList?.[`${ONYXKEYS.COLLECTION.REPORT}${iouActionToCleanUp.reportID}`];
+                const chatReportForCleanup = allReportsList?.[`${ONYXKEYS.COLLECTION.REPORT}${iouReportForCleanup?.chatReportID}`];
                 const {optimisticData, successData, failureData} = getCleanUpTransactionThreadReportOnyxData({
                     transactionThreadID: iouActionToCleanUp.childReportID,
                     shouldDeleteTransactionThread: true,
                     reportAction: iouActionToCleanUp,
                     updatedReportPreviewAction: updatedReportPreviewAction as OnyxTypes.ReportAction,
                     currentUserAccountID: currentUserPersonalDetails.accountID,
+                    transactionThread: allReportsList?.[`${ONYXKEYS.COLLECTION.REPORT}${iouActionToCleanUp.childReportID}`],
+                    iouReport: iouReportForCleanup,
+                    chatReport: chatReportForCleanup,
                 });
 
                 onyxData.optimisticData?.push(...optimisticData);
