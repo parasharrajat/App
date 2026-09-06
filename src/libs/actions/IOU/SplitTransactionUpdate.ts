@@ -1413,10 +1413,7 @@ function updateSplitTransactions({
             reportAction: currentReportAction,
             isChatReportArchived: undefined,
             currentUserAccountID: currentUserPersonalDetails.accountID,
-            shouldDeleteTransactionFromOnyx: undefined,
-            isMovingTransactionFromTrackExpense: undefined,
-            actionableWhisperReportActionID: undefined,
-            resolution: undefined,
+            transactionThreadReportActions: allReportActionsList?.[`${ONYXKEYS.COLLECTION.REPORT_ACTIONS}${currentReportAction?.childReportID}`],
             shouldRemoveIOUTransaction: isReportArchived || undeletedTransaction?.transactionID === forceDeleteSplitTransactionID,
         });
 
@@ -1428,6 +1425,8 @@ function updateSplitTransactions({
                 updatedReportPreviewAction: (updatedReportPreviewAction ?? originalReportPreviewAction) as OnyxTypes.ReportAction,
                 shouldAddUpdatedReportPreviewActionToOnyxData: false,
                 currentUserAccountID: currentUserPersonalDetails.accountID,
+                // shouldDeleteTransactionThread is false, so the transaction-thread report actions are never read here.
+                transactionThreadReportActionsParam: undefined,
             });
             updatedReportPreviewAction = cleanUpTransactionThreadReportOnyxData.updatedReportPreviewAction;
         }

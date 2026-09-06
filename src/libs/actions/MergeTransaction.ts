@@ -367,7 +367,8 @@ function getOnyxTargetTransactionData({
         onyxMethod: Onyx.METHOD.MERGE,
         key: `${ONYXKEYS.COLLECTION.TRANSACTION}${targetTransaction.transactionID}`,
         value: {
-            receipt: mergeTransaction.receipt ?? null,
+            // Clear the old count so it does not describe the newly chosen receipt.
+            receipt: mergeTransaction.receipt ? {pageCount: null, ...mergeTransaction.receipt} : null,
         },
     });
 
@@ -654,8 +655,7 @@ function mergeTransactionRequest({
                 reportAction: sourceIouAction,
                 isChatReportArchived: false,
                 currentUserAccountID: currentUserAccountIDParam,
-                shouldDeleteTransactionFromOnyx: undefined,
-                isMovingTransactionFromTrackExpense: undefined,
+                transactionThreadReportActions: sourceTransactionThreadReportActions,
                 actionableWhisperReportActionID,
                 resolution: CONST.REPORT.ACTIONABLE_TRACK_EXPENSE_WHISPER_RESOLUTION.NOTHING,
                 shouldRemoveIOUTransaction: false,

@@ -75,6 +75,7 @@ type DeleteMoneyRequestFunctionParams = {
     currentUserAccountID: number;
     currentUserEmail: string;
     transactionThreadReport: OnyxEntry<OnyxTypes.Report>;
+    transactionThreadReportActions: OnyxEntry<OnyxTypes.ReportActions>;
     policy?: OnyxEntry<OnyxTypes.Policy>;
     getCurrencyDecimals: CurrencyListActionsContextType['getCurrencyDecimals'];
 };
@@ -648,7 +649,7 @@ function getCleanUpTransactionThreadReportOnyxData({
         let transactionThreadReportActions = null;
         if (transactionThreadID) {
             transactionThread = transactionThreadParam ?? allReports?.[`${ONYXKEYS.COLLECTION.REPORT}${transactionThreadID}`] ?? null;
-            transactionThreadReportActions = transactionThreadReportActionsParam ?? getAllReportActionsFromIOU()?.[`${ONYXKEYS.COLLECTION.REPORT_ACTIONS}${transactionThreadID}`] ?? null;
+            transactionThreadReportActions = transactionThreadReportActionsParam ?? null;
         }
 
         optimisticData.push(
@@ -792,6 +793,7 @@ function deleteMoneyRequest({
     allTransactionViolationsParam,
     currentUserAccountID,
     currentUserEmail,
+    transactionThreadReportActions,
     policy,
     getCurrencyDecimals,
 }: DeleteMoneyRequestFunctionParams) {
@@ -947,6 +949,7 @@ function deleteMoneyRequest({
         reportAction,
         isChatIOUReportArchived,
         currentUserAccountID,
+        transactionThreadReportActionsParam: transactionThreadReportActions,
     });
     optimisticData.push(...cleanUpTransactionThreadReportOnyxData.optimisticData);
 
