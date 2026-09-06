@@ -621,23 +621,30 @@ function getCleanUpTransactionThreadReportOnyxData({
     shouldAddUpdatedReportPreviewActionToOnyxData = true,
     currentUserAccountID,
     transactionThread: transactionThreadParam,
-    iouReport: iouReportParam,
-    chatReport: chatReportParam,
+    iouReport,
+    chatReport,
     transactionThreadReportActionsParam,
 }: {
     transactionThreadID?: string;
     shouldDeleteTransactionThread: boolean;
-    reportAction?: ReportAction;
     isChatIOUReportArchived?: boolean;
     updatedReportPreviewAction?: ReportAction;
     shouldAddUpdatedReportPreviewActionToOnyxData?: boolean;
     currentUserAccountID: number;
     transactionThread?: OnyxEntry<OnyxTypes.Report>;
-    iouReport?: OnyxEntry<OnyxTypes.Report>;
-    chatReport?: OnyxEntry<OnyxTypes.Report>;
     transactionThreadReportActionsParam?: OnyxEntry<OnyxTypes.ReportActions>;
-}) {
-    const allReports = getAllReports();
+} & (
+    | {
+          reportAction: ReportAction;
+          iouReport: OnyxEntry<OnyxTypes.Report>;
+          chatReport: OnyxEntry<OnyxTypes.Report>;
+      }
+    | {
+          reportAction?: undefined;
+          iouReport?: OnyxEntry<OnyxTypes.Report>;
+          chatReport?: OnyxEntry<OnyxTypes.Report>;
+      }
+)) {
     const allReportNameValuePairs = getAllReportNameValuePairs();
 
     const optimisticData: Array<OnyxUpdate<typeof ONYXKEYS.COLLECTION.REPORT | typeof ONYXKEYS.COLLECTION.REPORT_ACTIONS>> = [];
@@ -648,7 +655,7 @@ function getCleanUpTransactionThreadReportOnyxData({
         let transactionThread = null;
         let transactionThreadReportActions = null;
         if (transactionThreadID) {
-            transactionThread = transactionThreadParam ?? allReports?.[`${ONYXKEYS.COLLECTION.REPORT}${transactionThreadID}`] ?? null;
+            transactionThread = transactionThreadParam ?? null;
             transactionThreadReportActions = transactionThreadReportActionsParam ?? null;
         }
 
@@ -698,8 +705,6 @@ function getCleanUpTransactionThreadReportOnyxData({
 
     // Update the child comment visible count for reportPreviewAction.
     const iouReportID = isMoneyRequestAction(reportAction) ? reportAction?.reportID : undefined;
-    const iouReport = iouReportParam ?? allReports?.[`${ONYXKEYS.COLLECTION.REPORT}${iouReportID}`];
-    const chatReport = chatReportParam ?? allReports?.[`${ONYXKEYS.COLLECTION.REPORT}${iouReport?.chatReportID}`];
     const originalReportPreviewAction = getReportPreviewReportAction(chatReport?.reportID, iouReport?.reportID) ?? undefined;
     let reportPreviewAction = updatedReportPreviewAction ?? originalReportPreviewAction;
     if (
