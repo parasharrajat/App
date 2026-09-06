@@ -441,7 +441,7 @@ describe('actions/Duplicate', () => {
                     optimisticData: expect.arrayContaining([
                         expect.objectContaining({
                             key: `${ONYXKEYS.COLLECTION.REPORT}${reportID}`,
-                            value: passedExpenseReport,
+                            value: expect.objectContaining({total: (passedExpenseReport.total ?? 0) - duplicateTransaction1.amount}),
                         }),
                     ]),
                 }),
