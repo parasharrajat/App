@@ -680,6 +680,7 @@ function getDeleteTrackExpenseInformation({
     actionableWhisperReportActionID = '',
     resolution = '',
     shouldRemoveIOUTransaction = true,
+    transactionThread,
 }: GetDeleteTrackExpenseInformationParams) {
     // STEP 1: Get all collections we're updating
     const transaction = getAllTransactions()?.[`${ONYXKEYS.COLLECTION.TRANSACTION}${transactionID}`];
