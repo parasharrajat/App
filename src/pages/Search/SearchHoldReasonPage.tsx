@@ -83,20 +83,20 @@ function SearchHoldReasonPage({route}: SearchHoldReasonPageProps) {
                 return;
             }
             if (isBulkHold) {
-                putTransactionsOnHold(
-                    selectedTransactionIDs,
+                putTransactionsOnHold({
+                    transactionsID: selectedTransactionIDs,
                     allReports,
-                    selectedTransactionReports,
+                    transactionReports: selectedTransactionReports,
                     comment,
                     reportID,
                     isOffline,
-                    currentUserLogin ?? '',
+                    currentUserLogin: currentUserLogin ?? '',
                     currentUserAccountID,
-                    selectedTransactionViolations,
+                    allTransactionViolations: selectedTransactionViolations,
                     isTrackIntentUser,
                     delegateAccountID,
                     ancestors,
-                );
+                });
                 clearSelectedTransactions(true);
             } else {
                 const transactionIDs = Object.keys(selectedTransactions);
@@ -104,20 +104,20 @@ function SearchHoldReasonPage({route}: SearchHoldReasonPageProps) {
                     const transactionThreadReportID = selectedTransactions[transactionID].reportAction?.childReportID;
                     const transactionReportID = selectedTransactions[transactionID].transaction?.reportID;
                     const transactionViolations = selectedTransactionViolations?.[`${ONYXKEYS.COLLECTION.TRANSACTION_VIOLATIONS}${transactionID}`];
-                    putOnHold(
+                    putOnHold({
                         transactionID,
                         comment,
-                        transactionThreadReportID,
-                        allReports?.[`${ONYXKEYS.COLLECTION.REPORT}${transactionThreadReportID}`],
-                        allReports?.[`${ONYXKEYS.COLLECTION.REPORT}${transactionReportID}`],
+                        initialReportID: transactionThreadReportID,
+                        initialReport: allReports?.[`${ONYXKEYS.COLLECTION.REPORT}${transactionThreadReportID}`],
+                        transactionReport: allReports?.[`${ONYXKEYS.COLLECTION.REPORT}${transactionReportID}`],
                         isOffline,
-                        currentUserLogin ?? '',
+                        currentUserLogin: currentUserLogin ?? '',
                         currentUserAccountID,
                         transactionViolations,
                         isTrackIntentUser,
                         delegateAccountID,
                         ancestors,
-                    );
+                    });
                 }
                 clearSelectedTransactions();
             }

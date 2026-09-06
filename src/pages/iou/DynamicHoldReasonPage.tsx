@@ -78,20 +78,20 @@ function DynamicHoldReasonPage({route}: DynamicHoldReasonPageProps) {
             return;
         }
 
-        putOnHold(
+        putOnHold({
             transactionID,
-            values.comment,
-            holdReportID,
-            report,
+            comment: values.comment,
+            initialReportID: holdReportID,
+            initialReport: report,
             transactionReport,
             isOffline,
-            currentUserLogin ?? '',
+            currentUserLogin: currentUserLogin ?? '',
             currentUserAccountID,
             transactionViolations,
             isTrackIntentUser,
             delegateAccountID,
             ancestors,
-        );
+        });
         Navigation.goBack(backPath);
     };
 

@@ -49,20 +49,33 @@ import {getAllReports, getAllTransactions} from '.';
 /**
  * Put expense on HOLD
  */
-function putOnHold(
-    transactionID: string,
-    comment: string,
-    initialReportID: string | undefined,
-    initialReport: OnyxEntry<OnyxTypes.Report>,
-    transactionReport: OnyxEntry<OnyxTypes.Report>,
-    isOffline: boolean,
-    currentUserLogin: string,
-    currentUserAccountID: number,
-    transactionViolations: OnyxEntry<OnyxTypes.TransactionViolations>,
-    isTrackIntentUser: boolean | undefined,
-    delegateAccountID: number | undefined,
-    ancestors: Ancestor[] = [],
-) {
+function putOnHold({
+    transactionID,
+    comment,
+    initialReportID,
+    initialReport,
+    transactionReport,
+    isOffline,
+    currentUserLogin,
+    currentUserAccountID,
+    transactionViolations,
+    isTrackIntentUser,
+    delegateAccountID,
+    ancestors = [],
+}: {
+    transactionID: string;
+    comment: string;
+    initialReportID: string | undefined;
+    initialReport: OnyxEntry<OnyxTypes.Report>;
+    transactionReport: OnyxEntry<OnyxTypes.Report>;
+    isOffline: boolean;
+    currentUserLogin: string;
+    currentUserAccountID: number;
+    transactionViolations: OnyxEntry<OnyxTypes.TransactionViolations>;
+    isTrackIntentUser: boolean | undefined;
+    delegateAccountID: number | undefined;
+    ancestors?: Ancestor[];
+}) {
     const allTransactions = getAllTransactions();
 
     const currentTime = DateUtils.getDBTime();
@@ -342,29 +355,42 @@ function putOnHold(
     Navigation.setNavigationActionToMicrotaskQueue(() => notifyNewAction(currentReportID, undefined, true));
 }
 
-function putTransactionsOnHold(
-    transactionsID: string[],
-    allReports: OnyxCollection<OnyxTypes.Report>,
-    transactionReports: Record<string, OnyxEntry<OnyxTypes.Report>>,
-    comment: string,
-    reportID: string,
-    isOffline: boolean,
-    currentUserLogin: string,
-    currentUserAccountID: number,
-    allTransactionViolations: OnyxCollection<OnyxTypes.TransactionViolations>,
-    isTrackIntentUser: boolean | undefined,
-    delegateAccountID: number | undefined,
-    ancestors: Ancestor[] = [],
-) {
+function putTransactionsOnHold({
+    transactionsID,
+    allReports,
+    transactionReports,
+    comment,
+    reportID,
+    isOffline,
+    currentUserLogin,
+    currentUserAccountID,
+    allTransactionViolations,
+    isTrackIntentUser,
+    delegateAccountID,
+    ancestors = [],
+}: {
+    transactionsID: string[];
+    allReports: OnyxCollection<OnyxTypes.Report>;
+    transactionReports: Record<string, OnyxEntry<OnyxTypes.Report>>;
+    comment: string;
+    reportID: string;
+    isOffline: boolean;
+    currentUserLogin: string;
+    currentUserAccountID: number;
+    allTransactionViolations: OnyxCollection<OnyxTypes.TransactionViolations>;
+    isTrackIntentUser: boolean | undefined;
+    delegateAccountID: number | undefined;
+    ancestors?: Ancestor[];
+}) {
     for (const transactionID of transactionsID) {
         const {childReportID} = getIOUActionForReportID(reportID, transactionID) ?? {};
         const transactionViolations = allTransactionViolations?.[`${ONYXKEYS.COLLECTION.TRANSACTION_VIOLATIONS}${transactionID}`];
-        putOnHold(
+        putOnHold({
             transactionID,
             comment,
-            childReportID,
-            allReports?.[`${ONYXKEYS.COLLECTION.REPORT}${childReportID}`],
-            transactionReports[transactionID],
+            initialReportID: childReportID,
+            initialReport: allReports?.[`${ONYXKEYS.COLLECTION.REPORT}${childReportID}`],
+            transactionReport: transactionReports[transactionID],
             isOffline,
             currentUserLogin,
             currentUserAccountID,
@@ -372,7 +398,7 @@ function putTransactionsOnHold(
             isTrackIntentUser,
             delegateAccountID,
             ancestors,
-        );
+        });
     }
 }
 
