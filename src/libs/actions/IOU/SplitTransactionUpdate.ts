@@ -78,7 +78,7 @@ import type {BuildOnyxDataForMoneyRequestKeys, MoneyRequestInformationParams} fr
 import type {UpdateMoneyRequestDataKeys} from './UpdateMoneyRequest';
 
 import {getCleanUpTransactionThreadReportOnyxData} from './DeleteMoneyRequest';
-import {getAllReports, getIOUAndChatReportForIOUAction} from './index';
+import {getIOUAndChatReportForIOUAction} from './index';
 import {getMoneyRequestParticipantsFromReport} from './MoneyRequest';
 import {getMoneyRequestInformation, getReportPreviewReportAction} from './MoneyRequestBuilder';
 import {getDeleteTrackExpenseInformation} from './TrackExpense';
@@ -1133,9 +1133,9 @@ function updateSplitTransactions({
                 // belong to another split, so preferring it moved this split there whenever its amount changed.
                 const workspaceExpenseReportID = isConfirmedWorkspaceTransaction ? (splitTransaction?.reportID ?? workspaceChatReport?.iouReportID) : undefined;
                 const transactionThreadReportKey = isReverseSplitOperation ? splitExpense?.reportID : (existingTransactionThreadID ?? transactionThreadReportID);
-                const transactionThreadReport = getAllReports()?.[`${ONYXKEYS.COLLECTION.REPORT}${transactionThreadReportKey}`];
+                const transactionThreadReport = allReportsList?.[`${ONYXKEYS.COLLECTION.REPORT}${transactionThreadReportKey}`];
                 const iouReportID = workspaceExpenseReportID ?? splitExpense?.reportID ?? transactionThreadReport?.parentReportID;
-                const transactionIOUReport = getAllReports()?.[`${ONYXKEYS.COLLECTION.REPORT}${iouReportID}`];
+                const transactionIOUReport = allReportsList?.[`${ONYXKEYS.COLLECTION.REPORT}${iouReportID}`];
                 const newTransactionReportID = isSelfDMSplit ? CONST.REPORT.UNREPORTED_REPORT_ID : (workspaceExpenseReportID ?? splitExpense?.reportID);
                 const {onyxData: moneyRequestParamsOnyxData, params} = getUpdateMoneyRequestParams({
                     isVendorMatchingBetaEnabled,
